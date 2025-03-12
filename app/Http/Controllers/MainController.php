@@ -15,7 +15,11 @@ class MainController extends Controller
     {
         $users = User::all();
         $items = Item::all();
-        return view('pages.index', compact('items', 'users'));
+        $total = 0;
+        foreach ($items as $item) {
+            $total += $item->amount;
+        }
+        return view('pages.index', compact('items', 'users', 'total'));
     }
 
     /**
@@ -44,7 +48,6 @@ public function create()
      */
     public function store(Request $request)
     {
-        // dd($request->all());
         $validated = $request->validate([
             'name' => 'required',
             'amount' => 'required',
