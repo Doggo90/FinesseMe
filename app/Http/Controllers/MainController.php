@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Item;
+use App\Models\User;
 
 class MainController extends Controller
 {
@@ -12,14 +13,28 @@ class MainController extends Controller
      */
     public function index()
     {
+        $users = User::all();
         $items = Item::all();
-        return view('pages.index', compact('items'));
+        return view('pages.index', compact('items', 'users'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function addUser(Request $request)
+    {
+
+        $validated = $request->validate([
+            'name' => 'required',
+            'balance' => 'required',
+        ]);
+
+        $newUser = User::create($validated);
+        // dd($newUser);
+        return redirect()->route('page.index');
+
+    }
+public function create()
     {
 
     }
@@ -33,8 +48,9 @@ class MainController extends Controller
         $validated = $request->validate([
             'name' => 'required',
             'amount' => 'required',
+            'user_id' => 'required',
         ]);
-        $validated['user_id'] = 1;
+
         $newItem = Item::create($validated);
         return redirect()->route('page.index');
     }
@@ -46,7 +62,16 @@ class MainController extends Controller
     {
         //
     }
-
+    public function paid(string $id)
+    {
+        $item = Item::find($id);
+        $user = User::find($item->user_id);
+        $user->balance -= $item->amount;
+        $item->status = 'paid';
+        $item->save();
+        $user->save();
+        return redirect()->route('page.index');
+    }
     /**
      * Show the form for editing the specified resource.
      */
